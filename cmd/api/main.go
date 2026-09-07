@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"go-auth/internal/app"
 	"go-auth/internal/httpserver"
 	"log"
 	"net/http"
@@ -8,6 +10,18 @@ import (
 )
 
 func main() {
+	ctx := context.Background()
+
+	app, err := app.NewApp(ctx)
+	if err != nil {
+		log.Fatalf("Failed to start app: %v", err)
+	}
+	defer func() {
+		if err := app.Close(ctx); err != nil {
+			log.Printf("Failed to close app: %v", err)
+		}
+	}()
+
 	r := httpserver.NewRouter()
 
 	// standard Go type that runs a http server
