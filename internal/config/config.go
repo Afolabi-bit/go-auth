@@ -32,9 +32,6 @@ func LoadConfig() (Config, error) {
 	if cfg.JWTSecret == "" {
 		return Config{}, fmt.Errorf("Environment Variable JWT_SECRET not set")
 	}
-	return Config{
-		MongoURI:      os.Getenv("MONGO_URI"),
-		MongoDatabase: os.Getenv("MONGO_DB_NAME"),
-		JWTSecret:     os.Getenv("JWT_SECRET"),
-	}, nil
+
+	return cfg, nil
 }
