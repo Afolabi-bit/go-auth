@@ -16,21 +16,22 @@ type Mongo struct {
 }
 
 func Connect(ctx context.Context, cfg config.Config) (*Mongo, error) {
-	connectCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
 	clientOptions := options.Client().ApplyURI(cfg.MongoURI)
 
-	client, err := mongo.Connect(connectCtx, clientOptions)
+	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
 		return nil, fmt.Errorf("Mongo connection failed: %w", err)
 	}
 
-	database := client.Database(cfg.MongoDatabase)
-	//Ping the primary to verify the connection
-	if err = client.Ping(connectCtx, nil); err != nil {
+	// Ping the primary to verify the connection
+	pingCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	defer cancel()
+
+	if err = client.Ping(pingCtx, nil); err != nil {
 		return nil, fmt.Errorf("Mongo ping failed: %w", err)
 	}
+
+	database := client.Database(cfg.MongoDatabase)
 
 	return &Mongo{
 		Client:   client,

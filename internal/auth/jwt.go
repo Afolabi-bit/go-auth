@@ -26,7 +26,7 @@ func CreateToken(jwtSecret string, userId string, role string) (string, error) {
 		Role: role,
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	signed, err := token.SignedString([]byte(jwtSecret))
 

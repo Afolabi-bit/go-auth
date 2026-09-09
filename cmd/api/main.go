@@ -22,7 +22,7 @@ func main() {
 		}
 	}()
 
-	r := httpserver.NewRouter()
+	r := httpserver.NewRouter(app)
 
 	// standard Go type that runs a http server
 	srv := &http.Server{
