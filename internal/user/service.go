@@ -92,3 +92,40 @@ func (s *Service) Register(ctx context.Context, input RegisterInput) (AuthResult
 		User:  ToPublic(created),
 	}, nil
 }
+
+func (s *Service) Login(ctx context.Context, input LoginInput) (AuthResult, error) {
+	email := strings.ToLower(strings.TrimSpace(input.Email))
+	password := strings.TrimSpace(input.Password)
+
+	if email == "" || password == "" {
+		return AuthResult{}, errors.New("email and password are required")
+	}
+
+	if len(password) < 6 {
+		return AuthResult{}, errors.New("password must be at least 6 characters long")
+	}
+
+	user, err := s.repo.FindByEmail(ctx, email)
+
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return AuthResult{}, errors.New("invalid credentials")
+		}
+		return AuthResult{}, err
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
+		return AuthResult{}, errors.New("invalid credentials")
+	}
+
+	token, err := auth.CreateToken(s.jwtSecret, user.ID.Hex(), user.Role)
+	if err != nil {
+		return AuthResult{}, err
+	}
+
+	return AuthResult{
+		Token: token,
+		User:  ToPublic(user),
+	}, nil
+
+}
